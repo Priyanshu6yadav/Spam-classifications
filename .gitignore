@@ -1,36 +1,20 @@
-# Python
+# Virtual Environment
+.venv/
+venv/
+
+# Python cache
 __pycache__/
 *.py[cod]
 *$py.class
-*.so
-.Python
-*.egg-info/
-dist/
-build/
 
-# Virtual Environment
-venv/
-ENV/
-env/
-
-# IDE
-.vscode/
+# IDE and editor files
 .idea/
-*.swp
-*.swo
-*~
+.vscode/
 
-# OS
+# macOS files
 .DS_Store
-Thumbs.db
 
-# Environment variables
-.env
-.env.local
-
-# Data (optional - uncomment if you want to exclude)
-# data/raw/
-
-# Backup files
-*.bak
-*.backup
+# Data and Models (if they are too large for Git)
+# data/spam.csv
+# models/*.pkl
+# models/*.png

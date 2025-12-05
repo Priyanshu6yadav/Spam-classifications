@@ -8,9 +8,11 @@ This application is designed to be deployed on services like Render.
 # Import necessary libraries
 import os
 import pickle
+import time
 import logging
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, g
 from typing import Dict, Any, Tuple
+from functools import wraps
 
 # --- Logging Configuration ---
 # Configure logging to output informational messages and above
@@ -21,6 +23,11 @@ logging.basicConfig(
 # Create a logger instance for this application
 logger = logging.getLogger(__name__)
 
+# --- Rate Limiting ---
+# Simple in-memory rate limiting
+RATE_LIMIT_REQUESTS = 15  # Max requests
+RATE_LIMIT_PERIOD = 60  # Seconds
+request_counts: Dict[str, list] = {}
 
 # --- Model Initialization ---
 # The pipeline will be loaded from disk when the application starts.
@@ -34,7 +41,7 @@ def load_pipeline():
     global model
     
     # Get the absolute path to the directory of the current script.
-    base_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
     
     # Define path to the model file.
     model_path = os.path.join(base_dir, 'models', 'model_optimized.pkl')
@@ -58,7 +65,7 @@ def create_app():
     Create and configure an instance of the Flask application.
     This follows the App Factory pattern.
     """
-    app = Flask(__name__)
+    app = Flask(__name__, static_folder='../static', template_folder='../templates')
 
     # --- Model Loading ---
     load_pipeline()
@@ -71,7 +78,36 @@ def create_app():
         """
         return render_template('index.html')
 
+    def rate_limit_decorator(f):
+        """A decorator to handle rate limiting."""
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            client_ip = request.remote_addr
+            current_time = time.time()
+
+            if client_ip not in request_counts:
+                request_counts[client_ip] = []
+
+            # Remove timestamps older than the rate limit period
+            request_counts[client_ip] = [
+                ts for ts in request_counts[client_ip] if current_time - ts < RATE_LIMIT_PERIOD
+            ]
+
+            if len(request_counts[client_ip]) >= RATE_LIMIT_REQUESTS:
+                logger.warning(f"Rate limit exceeded for IP: {client_ip}")
+                return {
+                    'error': True,
+                    'message': 'Too many requests. Please wait a minute and try again.',
+                    'status': 'error'
+                }, 429  # HTTP 429: Too Many Requests
+
+            request_counts[client_ip].append(current_time)
+            return f(*args, **kwargs)
+        return decorated_function
+
+
     @app.route('/predict', methods=['POST'])
+    @rate_limit_decorator
     def predict() -> Tuple[Dict[str, Any], int]:
         """
         Handle the POST request for message classification.
@@ -105,13 +141,12 @@ def create_app():
             if model is None:
                 logger.error("Model not loaded!")
                 raise Exception("Model is not loaded. Please restart the application.")
-            
-            # The pipeline handles vectorization and prediction in one step.
-            prediction = model.predict([message])[0]
+
+            # --- Prediction (Optimized to run pipeline once) ---
             confidence = model.predict_proba([message])[0]
+            prediction = 1 if confidence[1] > confidence[0] else 0
             
             is_spam = (prediction == 1)
-            confidence_score = max(confidence) * 100
             ham_confidence = confidence[0] * 100
             spam_confidence = confidence[1] * 100
             
@@ -121,7 +156,7 @@ def create_app():
                 'error': False,
                 'status': 'spam' if is_spam else 'legitimate',
                 'message': f'This message is {"🚨 SPAM" if is_spam else "💬 LEGITIMATE"}',
-                'confidence': round(confidence_score, 1),
+                'confidence': round(max(ham_confidence, spam_confidence), 1),
                 'spam_confidence': round(spam_confidence, 1),
                 'ham_confidence': round(ham_confidence, 1)
             }, 200
@@ -139,13 +174,13 @@ def create_app():
     def not_found(error: Exception) -> Tuple[str, int]:
         """Custom handler for 404 Not Found errors."""
         logger.warning(f"404 error encountered at {request.path}: {error}")
-        return render_template('index.html', prediction_text='Page not found. Please check the URL.'), 404
+        return render_template('index.html', error_message='404 - Page Not Found'), 404
 
     @app.errorhandler(500)
     def internal_error(error: Exception) -> Tuple[str, int]:
         """Custom handler for 500 Internal Server errors."""
         logger.error(f"500 internal server error: {error}", exc_info=True)
-        return render_template('index.html', prediction_text='An internal server error occurred. The issue has been logged.'), 500
+        return render_template('index.html', error_message='500 - An internal server error occurred.'), 500
 
     return app
 
