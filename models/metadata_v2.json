@@ -1,0 +1,25 @@
+{
+  "version": "2.0",
+  "accuracy": 0.9825918762088974,
+  "precision": 0.9828571428571429,
+  "recall": 0.8775510204081632,
+  "f1_score": 0.9272237196765498,
+  "fp_rate": 0.002214022140221402,
+  "confusion_matrix": [
+    [
+      1352,
+      3
+    ],
+    [
+      24,
+      172
+    ]
+  ],
+  "features": 3000,
+  "trees": 100,
+  "ngrams": "(1,2)",
+  "calibrated": true,
+  "training_samples": 3618,
+  "test_samples": 1551,
+  "unique_messages": 5169
+}
