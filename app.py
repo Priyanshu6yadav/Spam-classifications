@@ -46,15 +46,15 @@ def load_model():
     global vectorizer, model
     
     try:
-        # Define paths for the pickle files
-        vectorizer_path = 'vectorizer.pkl'
-        model_path = 'model.pkl'
+        # Define paths for the pickle files (check models directory first)
+        vectorizer_path = os.path.join('models', 'vectorizer.pkl')
+        model_path = os.path.join('models', 'model.pkl')
         
-        # Fallback to a 'models' directory if not found in the root
+        # Fallback to root directory for backward compatibility
         if not os.path.exists(vectorizer_path):
-            vectorizer_path = os.path.join('models', 'vectorizer.pkl')
+            vectorizer_path = 'vectorizer.pkl'
         if not os.path.exists(model_path):
-            model_path = os.path.join('models', 'model.pkl')
+            model_path = 'model.pkl'
         
         # Load the vectorizer
         logger.info(f"Loading vectorizer from {vectorizer_path}")
