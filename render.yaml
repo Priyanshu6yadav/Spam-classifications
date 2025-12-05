@@ -1,0 +1,25 @@
+# render.yaml
+
+services:
+  # This defines the services that will be deployed.
+  - type: web
+    # The name of the service.
+    name: spam-classifier
+    # The environment for the service.
+    env: python
+    # The region where the service will be deployed.
+    region: oregon
+    # The plan for the service.
+    plan: free
+    # The branch of the git repository to deploy.
+    branch: main
+    # The runtime environment for the service.
+    runtime: python-3.11
+    # The command to build the service.
+    buildCommand: "pip install -r requirements.txt"
+    # The command to start the service.
+    startCommand: "gunicorn app:app"
+    # Environment variables for the service.
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11

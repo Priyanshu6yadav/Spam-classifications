@@ -1,0 +1,70 @@
+<!--
+This is the main HTML file for the Spam Classification web application.
+It provides the user interface for entering a message and viewing the classification result.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spam Classification</title>
+    <style>
+        /* Basic styling for the page */
+        body {
+            font-family: sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f2f5;
+        }
+        /* Styling for the main container */
+        .container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        /* Styling for the text area where the user enters the message */
+        textarea {
+            width: 100%;
+            padding: 0.5rem;
+            margin-top: 1rem;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        /* Styling for the submit button */
+        input[type="submit"] {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+        /* Styling for the prediction result text */
+        .prediction {
+            margin-top: 1.5rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Spam Message Classifier</h2>
+        <!-- The form that sends the message to the /predict endpoint -->
+        <form action="{{ url_for('predict') }}" method="post">
+            <textarea name="message" rows="4" placeholder="Enter a message to classify..."></textarea>
+            <br>
+            <input type="submit" value="Predict">
+        </form>
+        <!-- This is where the prediction result will be displayed -->
+        <div class="prediction">
+            {{ prediction_text }}
+        </div>
+    </div>
+</body>
+</html>
