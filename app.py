@@ -78,22 +78,6 @@ def load_model():
         raise
 
 
-@app.before_request
-def initialize_models():
-    """
-    Initialize the machine learning models before the first request.
-    This ensures that the models are loaded only once when the application starts.
-    """
-    global vectorizer, model
-    if vectorizer is None or model is None:
-        try:
-            load_model()
-        except Exception as e:
-            logger.critical(f"Failed to initialize models on startup: {e}")
-            # In a production environment, you might want to handle this more gracefully
-            # or prevent the app from starting if models are essential.
-
-
 # --- Flask Routes ---
 
 @app.route('/')
@@ -108,38 +92,42 @@ def home():
 def predict():
     """
     Handle the POST request for message classification.
-    - Retrieves the message from the form.
+    - Retrieves the message from JSON or form data.
     - Validates the input.
     - Uses the loaded model to predict if the message is spam or ham.
-    - Returns the result to the user on the web page.
+    - Returns the result as JSON.
     """
     try:
-        # Get the message from the form data and remove leading/trailing whitespace
-        message = request.form.get('message', '').strip()
+        # Get the message from JSON or form data
+        data = request.get_json() if request.is_json else request.form
+        message = data.get('message', '').strip()
         
         # --- Input Validation ---
         if not message:
             logger.warning("Prediction attempt with empty message.")
-            return render_template(
-                'index.html',
-                prediction_text='Please enter a message to classify.',
-                input_text='',
-                error=True
-            )
+            return {
+                'error': True,
+                'message': 'Please enter a message to classify.',
+                'status': 'error'
+            }, 400
         
         # Limit message length to prevent potential abuse
         if len(message) > 5000:
             logger.warning(f"Prediction attempt with overly long message ({len(message)} chars).")
-            return render_template(
-                'index.html',
-                prediction_text='Message is too long. Please limit to 5000 characters.',
-                input_text=message,
-                error=True
-            )
+            return {
+                'error': True,
+                'message': 'Message is too long. Please limit to 5000 characters.',
+                'status': 'error'
+            }, 400
         
         logger.info(f"Classifying message of length {len(message)}")
         
         # --- Prediction ---
+        # Ensure vectorizer and model are loaded
+        if vectorizer is None or model is None:
+            logger.error("Models not loaded!")
+            raise Exception("Models are not loaded. Please restart the application.")
+        
         # Transform the message into a numerical vector
         vect = vectorizer.transform([message]).toarray()
         
@@ -150,29 +138,34 @@ def predict():
         
         # --- Result Formatting ---
         is_spam = (prediction == 1)
-        output = "Spam 🚨" if is_spam else "Legitimate 💬"
+        
+        # Get confidence for the predicted class
         confidence_score = max(confidence) * 100
         
-        logger.info(f"Prediction: {output}, Confidence: {confidence_score:.2f}%")
+        # Get spam and ham probabilities
+        ham_confidence = confidence[0] * 100
+        spam_confidence = confidence[1] * 100
         
-        # Render the page with the classification result
-        return render_template(
-            'index.html',
-            prediction_text=f'Classification: {output}',
-            confidence_text=f'Confidence: {confidence_score:.1f}%',
-            input_text=message,
-            error=False
-        )
+        logger.info(f"Prediction: {'Spam' if is_spam else 'Legitimate'}, Confidence: {confidence_score:.2f}%")
+        
+        # Return JSON response for AJAX handling
+        return {
+            'error': False,
+            'status': 'spam' if is_spam else 'legitimate',
+            'message': f'This message is {"🚨 SPAM" if is_spam else "💬 LEGITIMATE"}',
+            'confidence': round(confidence_score, 1),
+            'spam_confidence': round(spam_confidence, 1),
+            'ham_confidence': round(ham_confidence, 1)
+        }, 200
     
     except Exception as e:
-        # Log the full error for debugging and return a generic error to the user
+        # Log the full error for debugging
         logger.error(f"An error occurred during prediction: {e}", exc_info=True)
-        return render_template(
-            'index.html',
-            prediction_text=f'An unexpected error occurred. Please try again.',
-            input_text=message,
-            error=True
-        )
+        return {
+            'error': True,
+            'message': f'An unexpected error occurred: {str(e)}',
+            'status': 'error'
+        }, 500
 
 
 # --- Error Handlers ---
@@ -194,22 +187,32 @@ def internal_error(error):
 # --- Application Entry Point ---
 
 if __name__ == "__main__":
-    # Get the port from environment variables, defaulting to 5000 for local development
-    port = int(os.environ.get('PORT', 5000))
+    # Get the port from environment variables, defaulting to 8000 for local development (avoid AirPlay conflicts)
+    port = int(os.environ.get('PORT', 8000))
     
     try:
         # Load the models before starting the server
         load_model()
         logger.info("Application starting on port %d", port)
+        logger.info("Open browser and visit: http://localhost:%d", port)
         
         # Run the Flask app
-        # host='0.0.0.0' is required for deployment on services like Render
+        # host='127.0.0.1' for local development
+        # For Render deployment, change to '0.0.0.0'
         # debug=False is critical for production security
         app.run(
-            host='0.0.0.0',
+            host='127.0.0.1',
             port=port,
             debug=False
         )
+    except OSError as e:
+        if "Address already in use" in str(e):
+            new_port = port + 1
+            logger.warning(f"Port {port} is already in use. Trying {new_port}...")
+            app.run(host='127.0.0.1', port=new_port, debug=False)
+        else:
+            logger.critical(f"Failed to start the application: {e}", exc_info=True)
+            exit(1)
     except Exception as e:
         logger.critical(f"Failed to start the application: {e}", exc_info=True)
         # Exit with an error code if the app fails to start

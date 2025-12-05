@@ -1,0 +1,344 @@
+/* ==========================================
+   SPAM CLASSIFIER - ADVANCED STYLES
+   Water Transparent Effect & Animations
+   ========================================== */
+
+/* CSS Variables for consistent theming */
+:root {
+    --primary-blue: #3b82f6;
+    --primary-cyan: #06b6d4;
+    --primary-purple: #a855f7;
+    --dark-bg: #0f172a;
+    --light-text: #e0f2fe;
+    --accent-red: #ef4444;
+    --accent-green: #22c55e;
+}
+
+/* Global Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(to bottom, var(--primary-blue), var(--primary-cyan));
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(to bottom, var(--primary-cyan), var(--primary-purple));
+}
+
+/* Animation for floating blobs */
+@keyframes blob {
+    0%, 100% {
+        transform: translate(0, 0) scale(1);
+    }
+    33% {
+        transform: translate(30px, -50px) scale(1.1);
+    }
+    66% {
+        transform: translate(-20px, 20px) scale(0.9);
+    }
+}
+
+/* Apply blob animation to background elements */
+.animate-blob {
+    animation: blob 7s infinite;
+}
+
+.animation-delay-0 {
+    animation-delay: 0s;
+}
+
+.animation-delay-2 {
+    animation-delay: 2s;
+}
+
+.animation-delay-4 {
+    animation-delay: 4s;
+}
+
+/* Water-like transparent glass effect */
+.glass-effect {
+    backdrop-filter: blur(10px) saturate(180%);
+    background-color: rgba(255, 255, 255, 0.08);
+    border-radius: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37),
+                inset 0 0 60px rgba(6, 182, 212, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.glass-effect::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: shimmer 3s infinite;
+    pointer-events: none;
+}
+
+/* Shimmer animation for glass effect */
+@keyframes shimmer {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 100%;
+    }
+}
+
+/* Textarea enhancements */
+textarea {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+textarea:focus {
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.3),
+                inset 0 0 20px rgba(6, 182, 212, 0.1) !important;
+}
+
+/* Button Enhancements */
+button {
+    position: relative;
+    overflow: hidden;
+}
+
+button::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s, height 0.6s;
+}
+
+button:active::before {
+    width: 300px;
+    height: 300px;
+}
+
+/* Status Badge Animation */
+@keyframes pulse-glow {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(6, 182, 212, 0.8);
+    }
+}
+
+#statusBadge {
+    animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Progress Bar Animation */
+@keyframes fillBar {
+    from {
+        width: 0 !important;
+    }
+}
+
+#spamBar,
+#hamBar {
+    animation: fillBar 1s ease-out forwards;
+}
+
+/* Water ripple effect on hover */
+@keyframes water-ripple {
+    0% {
+        box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 20px rgba(6, 182, 212, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(6, 182, 212, 0);
+    }
+}
+
+.glass-effect:hover {
+    animation: water-ripple 0.6s ease-out;
+}
+
+/* Loading spinner animation */
+@keyframes spin-reverse {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(-360deg);
+    }
+}
+
+#loadingSpinner .absolute {
+    animation: spin 1s linear infinite;
+}
+
+#loadingSpinner .absolute:nth-child(2) {
+    animation: spin-reverse 0.8s linear infinite;
+}
+
+/* Text gradient animation */
+@keyframes gradient-shift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.gradient-text {
+    background: linear-gradient(135deg, #3b82f6, #06b6d4, #a855f7, #3b82f6);
+    background-size: 200% 200%;
+    animation: gradient-shift 3s ease infinite;
+}
+
+/* Smooth transitions for all elements */
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Container fade in animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.main-container {
+    animation: fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Results container entrance */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#resultsContainer {
+    animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+#errorContainer {
+    animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+/* Floating animation for icons */
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.float-icon {
+    animation: float 3s ease-in-out infinite;
+}
+
+/* Success badge styling */
+.success-badge {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(34, 197, 82, 0.2));
+    border-color: rgba(34, 197, 82, 0.5);
+    color: #86efac;
+}
+
+/* Danger badge styling */
+.danger-badge {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(244, 63, 94, 0.2));
+    border-color: rgba(244, 63, 94, 0.5);
+    color: #fca5a5;
+}
+
+/* Form input focus glow effect */
+input:focus,
+textarea:focus {
+    filter: drop-shadow(0 0 10px rgba(6, 182, 212, 0.5));
+}
+
+/* Responsive water effect for mobile */
+@media (max-width: 768px) {
+    .glass-effect {
+        border-radius: 1.5rem;
+    }
+    
+    .animate-blob {
+        opacity: 0.05;
+    }
+}
+
+/* Dark mode support (already dark, but ensuring compatibility) */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: var(--dark-bg);
+    }
+}
+
+/* Accessibility: Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Beautiful text shadow for headers */
+h1, h2 {
+    text-shadow: 0 0 20px rgba(6, 182, 212, 0.3);
+}
+
+/* Highlight text animation */
+::selection {
+    background: linear-gradient(135deg, var(--primary-blue), var(--primary-cyan));
+    color: white;
+}
+
+/* Print styles */
+@media print {
+    .glass-effect {
+        background-color: white;
+        border: 1px solid #ccc;
+    }
+    
+    body {
+        background-color: white;
+    }
+}
